@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventos by AJRA</title>
+    <link rel="icon" type="image/x-icon" href="img/favicon.ico">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/AJRA.png">
+    <meta name="description" content="EVENTOS by AJRA">
+    <meta property="og:title" content="EVENTOS by AJRA">
+    <meta property="og:description" content="Calendario de eventos de AJRA">
+    <meta property="og:image" content="img/sharing.webp">
+    <meta property="og:url" content="https://eventos.ajra.es">
+</head>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f0f0f0;
+    }
+
+    .home {
+        justify-content: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        flex-wrap: wrap;
+        margin-bottom: 50px;
+    }
+
+    .home h1,
+    .home h2 {
+        text-align: center;
+        margin: 5px;
+    }
+
+    h2 {
+        font-size: 1rem;
+        font-weight: normal;
+    }
+
+    .avatar {
+        max-width: 75px;
+        height: auto;
+        padding: 2rem;
+        border-radius: 50%;
+    }
+
+    .card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        margin: 1rem;
+        box-sizing: border-box;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .card img {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .card-body {
+        flex: 1;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .card-title {
+        font-weight: 700;
+        font-size: 1.3rem;
+        margin: 0;
+        margin-bottom: 0.5rem;
+    }
+
+    .fecha {
+        color: #757575;
+        font-size: 0.875rem;
+        padding-bottom: 0.75rem;
+        margin-top: 0;
+    }
+
+    .descripcion {
+        color: #0a0a0a;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+        flex: 1;
+    }
+
+    .row {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 5px;
+    }
+
+    .card-row {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+
+    .card-container {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+
+    .faltan {
+        display: inline-block;
+        background-color: rgb(108, 41, 240);
+        font-size: 0.875rem;
+        color: white;
+        padding: 0.65rem;
+        border-radius: 0.5rem;
+        text-align: center;
+    }
+
+    footer {
+        text-align: center;
+        font-size: 13px;
+        line-height: 2rem;
+        margin-top: 4rem;
+    }
+
+    #categoriaSelector {
+        color: black;
+        /* Cambia el color del texto */
+        background-color: #f0f0f0;
+        /* Cambia el color de fondo */
+        border: 1px solid #ccc;
+        /* Añade un borde */
+        padding: 10px;
+        /* Añade un espacio interno */
+        margin-top: 20px;
+        border-radius: 4px;
+        /* Agrega esquinas redondeadas */
+        font-size: 14px;
+        /* Cambia el tamaño del texto */
+        min-width: 200px;
+        /* Cambia el ancho del selector */
+    }
+</style>
+
+<body>
+    <header>
+        <img src="img/AJRA.webp" alt="AJRA" class="avatar">
+    </header>
+    <div class="home">
+        <img src="https://softr-prod.imgix.net/applications/e89e50a1-9317-4b59-bd24-88dc2dd834d6/assets/67a66ffd-83cb-48d4-9ddf-01399be3cf7c.svg"
+            alt="AJRA">
+        <h1>CALENDARIO DE EVENTOS</h1>
+        <h2>Listado de eventos de interes para AJRA</h2>
+        <select id="categoriaSelector">
+            <option value="TODAS LAS CATEGORIAS">TODAS LAS CATEGORIAS</option>
+            <option value="APPLE">APPLE</option>
+            <option value="CINE & TV">CINE & TV</option>
+            <option value="DC">DC</option>
+            <option value="DISNEY">DISNEY</option>
+            <option value="F1">F1</option>
+            <option value="FECHA DE INTERES">FECHA DE INTERES</option>
+            <option value="HBO MAX">HBO MAX</option>
+            <option value="KEYNOTES">KEYNOTES</option>
+            <option value="MARVEL">MARVEL</option>
+            <option value="NETFLIX">NETFLIX</option>
+            <option value="STAR WARS">STAR WARS</option>
+            <option value="TECNOLOGIA">TECNOLOGIA</option>
+            <option value="VIDEOJUEGOS">VIDEOJUEGOS</option>
+        </select>
+    </div>
+    <div id="titles" class="row"></div>
+    <footer>2023 &copy; Desarrollado con 🧠 & 💛 por <a href="https://ajra.es"
+            style="text-decoration: none; color: black"> &lt;/AJRA&gt; </a></footer>
+
+</body>
+
+</html>
+<script>
+    const PERSONAL_TOKEN = 'patSsd54VwzE3A8hJ.f71e6d6b2fd6fdb7bd7d2989ef7d8e13510f70523b36db87be1ec5927d24a0cd';
+const BASE_ID = 'appv63CHdtuyUwT61';
+const VIEW_NAME = 'Eventos';
+const API_URL = `https://api.airtable.com/v0/${BASE_ID}/${VIEW_NAME}`;
+const titlesContainer = document.getElementById('titles');
+const categoriaSelector = document.getElementById('categoriaSelector');
+const today = new Date();
+
+    function formatDate(date) {
+        const day = date.getUTCDate().toString().padStart(2, '0');
+        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
+        const year = date.getUTCFullYear();
+        return `${day}-${month}-${year}`;
+    }
+
+    function createCard(title, eventDate, description, attachments, faltanText) {
+    const card = document.createElement('div');
+    card.classList.add('card');
+
+    const cardImageContainer = document.createElement('div');
+    cardImageContainer.classList.add('poster-container');
+
+    attachments.forEach(attachment => {
+        const image = document.createElement('img');
+        image.src = attachment.url;
+        image.alt = title;
+        cardImageContainer.appendChild(image);
+    });
+
+    const cardBody = document.createElement('div');
+    cardBody.classList.add('card-body');
+
+    const cardTitle = document.createElement('h2');
+    cardTitle.classList.add('card-title');
+    cardTitle.textContent = title;
+
+    const eventDateElement = document.createElement('p');
+    eventDateElement.classList.add('fecha');
+    eventDateElement.textContent = formatDate(eventDate);
+
+    const descriptionElement = document.createElement('p');
+    descriptionElement.classList.add('descripcion');
+    descriptionElement.textContent = description;
+
+    const faltanContainer = document.createElement('div');
+    faltanContainer.classList.add('faltan-container');
+
+    const faltanElement = document.createElement('p');
+    faltanElement.classList.add('faltan');
+    faltanElement.textContent = faltanText;
+
+    faltanContainer.appendChild(faltanElement);
+
+    cardBody.appendChild(cardTitle);
+    cardBody.appendChild(eventDateElement);
+    cardBody.appendChild(descriptionElement);
+    cardBody.appendChild(faltanContainer);
+    card.appendChild(cardImageContainer);
+    card.appendChild(cardBody);
+
+    return card;
+}
+
+function filterAndDisplayEvents(data, selectedCategorias) {
+    titlesContainer.innerHTML = '';
+
+    data.records
+        .filter(record => {
+            const recordCategorias = record.fields['CATEGORIA'] || [];
+            const hasMatchingCategory =
+                selectedCategorias.length === 0 ||
+                selectedCategorias.includes('TODAS LAS CATEGORIAS') ||
+                recordCategorias.some(category => selectedCategorias.includes(category));
+
+            return hasMatchingCategory && new Date(record.fields['FECHA']) > today;
+        })
+        .sort((a, b) => new Date(a.fields['FECHA']) - new Date(b.fields['FECHA']))
+        .forEach(record => {
+            const { EVENTO, FECHA, DESCRIPCION } = record.fields;
+            const eventDate = new Date(FECHA);
+            const daysRemaining = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+            const faltanText = `FALTAN ${daysRemaining} DIAS`;
+
+            const attachments = record.fields['IMAGEN'] || [];
+
+            const card = createCard(EVENTO, eventDate, DESCRIPCION, attachments, faltanText);
+            titlesContainer.appendChild(card);
+        });
+}
+
+fetch(API_URL, {
+    headers: {
+        Authorization: `Bearer ${PERSONAL_TOKEN}`,
+    },
+})
+    .then(response => response.json())
+    .then(data => {
+        filterAndDisplayEvents(data, []);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
+categoriaSelector.addEventListener('change', () => {
+    fetch(API_URL, {
+        headers: {
+            Authorization: `Bearer ${PERSONAL_TOKEN}`,
+        },
+    })
+        .then(response => response.json())
+        .then(data => {
+            const selectedCategorias = Array.from(categoriaSelector.selectedOptions, option => option.value);
+            if (selectedCategorias.includes('TODAS LAS CATEGORIAS')) {
+                filterAndDisplayEvents(data, []);
+            } else {
+                filterAndDisplayEvents(data, selectedCategorias);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+        });
+});
+</script>
