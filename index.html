@@ -131,20 +131,13 @@
 
     #categoriaSelector {
         color: black;
-        /* Cambia el color del texto */
         background-color: #f0f0f0;
-        /* Cambia el color de fondo */
         border: 1px solid #ccc;
-        /* Añade un borde */
         padding: 10px;
-        /* Añade un espacio interno */
         margin-top: 20px;
         border-radius: 4px;
-        /* Agrega esquinas redondeadas */
         font-size: 14px;
-        /* Cambia el tamaño del texto */
         min-width: 200px;
-        /* Cambia el ancho del selector */
     }
 </style>
 
@@ -180,22 +173,20 @@
     const API_URL = `https://api.airtable.com/v0/${BASE_ID}/${VIEW_NAME}`;
     const titlesContainer = document.getElementById('titles');
     const categoriaSelector = document.getElementById('categoriaSelector');
-    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
 
-    function formatDate(date) {
-        const day = date.getUTCDate().toString().padStart(2, '0');
-        const month = (date.getUTCMonth() + 1).toString().padStart(2, '0');
-        const year = date.getUTCFullYear();
-        return `${day}-${month}-${year}`;
-    }
+    const formatDate = date => {
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+        return new Date(date).toLocaleDateString('es', options);
+    };
 
-    function createCard(title, eventDate, description, attachments, faltanText) {
+    const createCard = (title, eventDate, description, attachments, faltanText) => {
         const card = document.createElement('div');
-        card.classList.add('card');
+        card.className = 'card';
 
         const cardImageContainer = document.createElement('div');
-        cardImageContainer.classList.add('poster-container');
-
+        cardImageContainer.className = 'poster-container';
         attachments.forEach(attachment => {
             const image = document.createElement('img');
             image.src = attachment.url;
@@ -204,97 +195,69 @@
         });
 
         const cardBody = document.createElement('div');
-        cardBody.classList.add('card-body');
+        cardBody.className = 'card-body';
 
         const cardTitle = document.createElement('h2');
-        cardTitle.classList.add('card-title');
+        cardTitle.className = 'card-title';
         cardTitle.textContent = title;
 
         const eventDateElement = document.createElement('p');
-        eventDateElement.classList.add('fecha');
+        eventDateElement.className = 'fecha';
         eventDateElement.textContent = formatDate(eventDate);
 
         const descriptionElement = document.createElement('p');
-        descriptionElement.classList.add('descripcion');
+        descriptionElement.className = 'descripcion';
         descriptionElement.textContent = description;
 
         const faltanContainer = document.createElement('div');
-        faltanContainer.classList.add('faltan-container');
+        faltanContainer.className = 'faltan-container';
 
         const faltanElement = document.createElement('p');
-        faltanElement.classList.add('faltan');
+        faltanElement.className = 'faltan';
         faltanElement.textContent = faltanText;
-
         faltanContainer.appendChild(faltanElement);
 
-        cardBody.appendChild(cardTitle);
-        cardBody.appendChild(eventDateElement);
-        cardBody.appendChild(descriptionElement);
-        cardBody.appendChild(faltanContainer);
-        card.appendChild(cardImageContainer);
-        card.appendChild(cardBody);
+        [cardTitle, eventDateElement, descriptionElement, faltanContainer].forEach(element => cardBody.appendChild(element));
+        [cardImageContainer, cardBody].forEach(element => card.appendChild(element));
 
         return card;
-    }
+    };
 
-    function filterAndDisplayEvents(data, selectedCategorias) {
+    const filterAndDisplayEvents = (data, selectedCategorias) => {
         titlesContainer.innerHTML = '';
 
         data.records
             .filter(record => {
                 const recordCategorias = record.fields['CATEGORIA'] || [];
-                const hasMatchingCategory =
-                    selectedCategorias.length === 0 ||
-                    selectedCategorias.includes('TODAS LAS CATEGORIAS') ||
-                    recordCategorias.some(category => selectedCategorias.includes(category));
-
-                return hasMatchingCategory && new Date(record.fields['FECHA']) >= today;
-
+                const hasMatchingCategory = selectedCategorias.length === 0 || selectedCategorias.includes('TODAS LAS CATEGORIAS') || recordCategorias.some(category => selectedCategorias.includes(category));
+                return hasMatchingCategory && new Date(record.fields['FECHA']) >= yesterday;
             })
             .sort((a, b) => new Date(a.fields['FECHA']) - new Date(b.fields['FECHA']))
             .forEach(record => {
                 const { EVENTO, FECHA, DESCRIPCION } = record.fields;
                 const eventDate = new Date(FECHA);
-                const daysRemaining = Math.ceil((eventDate - today) / (1000 * 60 * 60 * 24));
+                const daysRemaining = Math.ceil((eventDate - yesterday) / (1000 * 60 * 60 * 24));
                 const faltanText = `FALTAN ${daysRemaining} DIAS`;
-
                 const attachments = record.fields['IMAGEN'] || [];
-
                 const card = createCard(EVENTO, eventDate, DESCRIPCION, attachments, faltanText);
                 titlesContainer.appendChild(card);
             });
-    }
+    };
 
-    fetch(API_URL, {
-        headers: {
-            Authorization: `Bearer ${PERSONAL_TOKEN}`,
-        },
-    })
-        .then(response => response.json())
-        .then(data => {
-            filterAndDisplayEvents(data, []);
-        })
-        .catch(error => {
-            console.error('Error:', error);
-        });
+    const fetchDataAndFilter = (selectedCategorias) => {
+        fetch(API_URL, { headers: { Authorization: `Bearer ${PERSONAL_TOKEN}` } })
+            .then(response => response.json())
+            .then(data => filterAndDisplayEvents(data, selectedCategorias))
+            .catch(error => console.error('Error:', error));
+    };
 
     categoriaSelector.addEventListener('change', () => {
-        fetch(API_URL, {
-            headers: {
-                Authorization: `Bearer ${PERSONAL_TOKEN}`,
-            },
-        })
-            .then(response => response.json())
-            .then(data => {
-                const selectedCategorias = Array.from(categoriaSelector.selectedOptions, option => option.value);
-                if (selectedCategorias.includes('TODAS LAS CATEGORIAS')) {
-                    filterAndDisplayEvents(data, []);
-                } else {
-                    filterAndDisplayEvents(data, selectedCategorias);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-            });
+        const selectedCategorias = Array.from(categoriaSelector.selectedOptions, option => option.value);
+        if (selectedCategorias.includes('TODAS LAS CATEGORIAS')) {
+            fetchDataAndFilter([]);
+        } else {
+            fetchDataAndFilter(selectedCategorias);
+        }
     });
+    fetchDataAndFilter([]);
 </script>
