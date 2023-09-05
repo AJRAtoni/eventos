@@ -47,6 +47,7 @@
         border-radius: 50%;
         transition: transform 0.2s ease-in-out;
     }
+
     .avatar:hover {
         transform: scale(1.05);
     }
@@ -103,6 +104,13 @@
         gap: 5px;
     }
 
+    .faltan-container {
+        display: flex;
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 7px;
+    }
+
     .faltan {
         display: inline-block;
         background-color: rgb(108, 41, 240);
@@ -112,6 +120,23 @@
         border-radius: 0.5rem;
         text-align: center;
     }
+
+    .iCal {
+        display: inline-block;
+        background-color: rgb(108, 41, 240);
+        font-size: 0.875rem;
+        color: white;
+        padding: 0.65rem;
+        border-radius: 0.5rem;
+        text-align: center;
+        min-width: 15px;
+        transition: transform 0.2s ease-in-out;
+    }
+
+    .iCal:hover {
+        transform: scale(1.05);
+    }
+
 
     footer {
         text-align: center;
@@ -142,7 +167,7 @@
         <a href="https://ajra.es">
             <img src="img/AJRA.webp" alt="AJRA" class="avatar">
         </a>
-            </header>
+    </header>
     <div class="home">
         <img src="https://softr-prod.imgix.net/applications/e89e50a1-9317-4b59-bd24-88dc2dd834d6/assets/67a66ffd-83cb-48d4-9ddf-01399be3cf7c.svg"
             alt="AJRA">
@@ -152,7 +177,6 @@
     <div id="events" class="row"></div>
     <footer>2023 &copy; Desarrollado con 🧠 & 💛 por <a href="https://ajra.es"
             style="text-decoration: none; color: black"> &lt;/AJRA&gt; </a></footer>
-
 </body>
 </html>
 
@@ -191,6 +215,9 @@
         eventDescription.className = 'descripcion';
         eventDescription.textContent = description;
 
+        const container = document.createElement('div');
+        container.className = 'ical-container';
+
         const daysRemainingContainer = document.createElement('div');
         daysRemainingContainer.className = 'faltan-container';
 
@@ -198,16 +225,44 @@
         daysRemainingElement.className = 'faltan';
         daysRemainingElement.textContent = daysRemainingText;
 
+        const generateICalButton = document.createElement('p');
+        generateICalButton.className = 'iCal';
+        generateICalButton.textContent = '+';
+        generateICalButton.addEventListener('click', () => {
+            generateICalFile(summary, start, description);
+        });
+
         daysRemainingContainer.appendChild(daysRemainingElement);
+        daysRemainingContainer.appendChild(generateICalButton);
 
         [eventTitle, eventDate, eventDescription, daysRemainingContainer].forEach(element => cardBody.appendChild(element));
-
         card.appendChild(cardBody);
         return card;
     };
 
-    const placeholderImageUrl = 'img/eventos.png';
+   const generateICalFile = (summary, startDate, description) => {
+    const startDateFormatted = new Date(startDate).toISOString().slice(0, 10).replace(/-/g, '');
+    const fileName = `${summary}.ics`;
+    const iCalContent = `BEGIN:VCALENDAR
+VERSION:2.0
+BEGIN:VEVENT
+SUMMARY:${summary}
+DTSTART;VALUE=DATE:${startDateFormatted}
+DTEND;VALUE=DATE:${startDateFormatted}
+DESCRIPTION:${description}
+END:VEVENT
+END:VCALENDAR`;
+    const blob = new Blob([iCalContent], { type: 'text/calendar' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    window.URL.revokeObjectURL(url);
+};
 
+    const placeholderImageUrl = 'img/eventos.png';
     const fetchGoogleSheetEvents = () => {
         const now = new Date();
         const apiKeyParam = `key=${API_KEY}`;
