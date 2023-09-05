@@ -186,16 +186,16 @@
     const eventsContainer = document.getElementById('events');
 
     const formatDate = (date) => {
-    const options = { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' };
-    const eventDate = new Date(date);
-    if (isNaN(eventDate.getTime()) || eventDate.getHours() === 0 && eventDate.getMinutes() === 0) {
-        options.hour = undefined;
-        options.minute = undefined;
-    }
-    return eventDate.toLocaleString('es', options);
-};
+        const options = { day: '2-digit', month: '2-digit', year: 'numeric'};
+        const eventDate = new Date(date);
+        if (isNaN(eventDate.getTime()) || eventDate.getHours() === 0 && eventDate.getMinutes() === 0) {
+            options.hour = undefined;
+            options.minute = undefined;
+        }
+        return eventDate.toLocaleString('es', options);
+    };
 
-    const createEventCard = (summary, start, description, imageUrl, daysRemainingText) => {
+    const createEventCard = (summary, start, description, imageUrl, daysRemainingText, duration) => {
         const card = document.createElement('div');
         card.className = 'card';
 
@@ -220,6 +220,10 @@
         eventDescription.className = 'descripcion';
         eventDescription.textContent = description;
 
+        const eventDuration = document.createElement('p');
+        eventDuration.className = 'duracion';
+        eventDuration.textContent = `Duración: ${duration} minutos`;
+
         const container = document.createElement('div');
         container.className = 'ical-container';
 
@@ -234,7 +238,7 @@
         generateICalButton.className = 'iCal';
         generateICalButton.textContent = '+';
         generateICalButton.addEventListener('click', () => {
-            generateICalFile(summary, start, description);
+            generateICalFile(summary, start, description, duration);
         });
 
         daysRemainingContainer.appendChild(daysRemainingElement);
@@ -245,38 +249,39 @@
         return card;
     };
 
-    const generateICalFile = (summary, startDate, description) => {
-    const startDateObject = new Date(startDate);
-    const startDateFormatted = startDateObject.toISOString().replace(/[:-]/g, '').split('.')[0] + 'Z'; // Formatear la fecha y hora
+    const generateICalFile = (summary, startDate, description, duration) => {
+        const startDateObject = new Date(startDate);
+        const endDateObject = new Date(startDateObject.getTime() + duration * 60000); // Calcula la fecha de finalización en milisegundos
 
-    const fileName = `${summary}.ics`;
-    const iCalContent = `BEGIN:VCALENDAR
+        const startDateFormatted = startDateObject.toISOString().replace(/[:-]/g, '').split('.')[0] + 'Z';
+        const endDateFormatted = endDateObject.toISOString().replace(/[:-]/g, '').split('.')[0] + 'Z';
+
+        const fileName = `${summary}.ics`;
+        const iCalContent = `BEGIN:VCALENDAR
 VERSION:2.0
 BEGIN:VEVENT
 SUMMARY:${summary}
 DTSTART:${startDateFormatted}
-DTEND:${startDateFormatted}
+DTEND:${endDateFormatted}
 DESCRIPTION:${description}
 END:VEVENT
 END:VCALENDAR`;
 
-    const blob = new Blob([iCalContent], { type: 'text/calendar' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    window.URL.revokeObjectURL(url);
-};
-
-
+        const blob = new Blob([iCalContent], { type: 'text/calendar' });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+    };
 
     const placeholderImageUrl = 'img/eventos.png';
     const fetchGoogleSheetEvents = () => {
         const now = new Date();
         const apiKeyParam = `key=${API_KEY}`;
-        const sheetRange = 'Eventos!A2:D';
+        const sheetRange = 'Eventos!A2:F'; // Agrega una columna para la duración
         const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheetRange}?${apiKeyParam}`;
 
         fetch(sheetUrl)
@@ -285,18 +290,30 @@ END:VCALENDAR`;
                 const rows = data.values || [];
                 const events = [];
                 rows.forEach(row => {
-                    const [summary, dateString, description, imageFilename] = row;
+                    const [summary, dateString, description, imageFilename, durationString] = row;
                     const imageUrl = imageFilename ? `img/${imageFilename}` : placeholderImageUrl;
-                    const eventDate = new Date(dateString);
-                    if (!isNaN(eventDate) && eventDate >= now) {
-                        events.push({ summary, eventDate, description, imageUrl });
+                    let eventDate = new Date(dateString);
+                    let duration = parseInt(durationString) || 60; // Duración predeterminada de 1 hora en minutos
+
+                    // Verificar si eventDate es válido, y si no, establecerlo en 8:00 am del mismo día.
+                    if (isNaN(eventDate.getTime())) {
+                        eventDate = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 8, 0, 0);
+                    }
+
+                    // Establecer la hora en 8:00 am si no se proporciona una hora válida.
+                    if (eventDate.getHours() === 0 && eventDate.getMinutes() === 0) {
+                        eventDate.setHours(8, 0, 0);
+                    }
+
+                    if (eventDate >= now) {
+                        events.push({ summary, eventDate, description, imageUrl, duration });
                     }
                 });
                 events.sort((a, b) => a.eventDate - b.eventDate);
                 events.forEach(event => {
                     const daysRemaining = Math.ceil((event.eventDate - now) / (1000 * 60 * 60 * 24));
                     const daysRemainingText = `FALTAN ${daysRemaining} DÍAS`;
-                    const eventCard = createEventCard(event.summary, event.eventDate, event.description, event.imageUrl, daysRemainingText);
+                    const eventCard = createEventCard(event.summary, event.eventDate, event.description, event.imageUrl, daysRemainingText, event.duration);
                     eventsContainer.appendChild(eventCard);
                 });
             })
