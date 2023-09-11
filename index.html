@@ -167,11 +167,14 @@ footer {
     const eventsContainer = document.getElementById('events');
     const placeholderimagen = 'img/eventos.png';
     
-    const formatDate = date => new Date(date).toLocaleDateString('es', { day: '2-digit', month: '2-digit', year: 'numeric' });
+    const formatDate = date => moment.tz(date, "America/New_York").format('L');
     
     const createEventCard = ({ titulo, eventDate, descripcion, imagen }) => {
-    const daysRemaining = Math.ceil((eventDate - moment.tz("America/New_York")) / (1000 * 60 * 60 * 24));
-    const diasfaltan = `FALTAN ${daysRemaining} DÍAS`;
+        const today = moment.tz("America/New_York").startOf('day');
+        const eventMoment = moment.tz(eventDate, "America/New_York");
+        const daysRemaining = eventMoment.diff(today, 'days');
+        const diasfaltan = `FALTAN ${daysRemaining} DÍAS`;
+
 
     const card = document.createElement('div');
     card.className = 'card';
@@ -217,6 +220,7 @@ footer {
     return card;
 };
     
+
     const generateICalFile = (titulo, startDate, descripcion) => {
     const eventDate = moment.tz(startDate, "America/New_York");
     let isAllDayEvent = (eventDate.hours() === 0 && eventDate.minutes() === 0);
