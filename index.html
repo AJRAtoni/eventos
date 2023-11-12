@@ -225,15 +225,16 @@ END:VCALENDAR`;
     }
 
     function searchEvents() {
-        const searchString = document.getElementById('searchInput').value;
+    const searchString = document.getElementById('searchInput').value.toLowerCase();
 
-        const filteredEvents = allEvents.filter(event =>
-            (event.titulo ? event.titulo.toLowerCase().includes(searchString) : false) ||
-            (event.descripcion ? event.descripcion.toLowerCase().includes(searchString) : false)
-        );
+    const filteredEvents = allEvents.filter(event => 
+        (event.titulo ? event.titulo.toLowerCase().includes(searchString) : false) ||
+        (event.descripcion ? event.descripcion.toLowerCase().includes(searchString) : false)
+    );
 
-        displayEvents(filteredEvents);
-    }
+    displayEvents(filteredEvents);
+}
+
 
     fetchGoogleSheetEvents();
 </script>
