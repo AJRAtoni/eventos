@@ -59,11 +59,11 @@
 
     let allEvents = [];
 
-    const formatDate = date => moment.tz(date, "America/New_York").format('L');
+    const formatDate = date => moment.tz(date, moment.tz.guess()).format('L');
 
     const createEventCard = ({ titulo, eventDate, descripcion, imagen }) => {
-        const today = moment.tz("America/New_York").startOf('day');
-        const eventMoment = moment.tz(eventDate, "America/New_York");
+        const today = moment.tz(moment.tz.guess()).startOf('day');
+        const eventMoment = moment.tz(eventDate, moment.tz.guess());
         const daysRemaining = eventMoment.diff(today, 'days');
         const diasfaltan = `FALTAN ${daysRemaining} DÍAS`;
 
@@ -113,45 +113,29 @@
     };
 
     const generateICalFile = (titulo, startDate, descripcion) => {
-        const eventDate = moment.tz(startDate, "America/New_York");
-        let isAllDayEvent = (eventDate.hours() === 0 && eventDate.minutes() === 0);
+    const eventDate = moment.tz(startDate, moment.tz.guess());
+    let startDateFormatted, endDateFormatted;
 
-        let startDateFormatted,
-            endDateFormatted;
+    if (eventDate.hours() === 0 && eventDate.minutes() === 0) {
+        // Evento todo el día
+        startDateFormatted = eventDate.format('YYYYMMDD');
+        endDateFormatted = eventDate.clone().add(1, 'day').format('YYYYMMDD');
+    } else {
+        // Evento con hora específica
+        startDateFormatted = eventDate.utc().format('YYYYMMDDTHHmmss') + 'Z';
+        endDateFormatted = eventDate.clone().add(1, 'hour').utc().format('YYYYMMDDTHHmmss') + 'Z';
+    }
 
-        if (isAllDayEvent) {
-            startDateFormatted = eventDate.format('YYYYMMDD');
-            endDateFormatted = eventDate
-                .clone()
-                .add(1, 'day')
-                .format('YYYYMMDD');
-        } else {
-            startDateFormatted = eventDate.format('YYYYMMDDTHHmmss');
-            endDateFormatted = eventDate
-                .clone()
-                .add(1, 'hour')
-                .format('YYYYMMDDTHHmmss');
-        }
-
-        const iCalContent = `BEGIN:VCALENDAR
+    const iCalContent = `BEGIN:VCALENDAR
 VERSION:2.0
 CALSCALE:GREGORIAN
-BEGIN:VTIMEZONE
-TZID:America/New_York
-BEGIN:STANDARD
-DTSTART:19701101T020000
-TZNAME:EST
-END:STANDARD
-BEGIN:DAYLIGHT
-DTSTART:19700308T020000
-TZNAME:EDT
-END:DAYLIGHT
-END:VTIMEZONE
 BEGIN:VEVENT
 SUMMARY:${titulo}
-DTSTART;TZID=America/New_York:${startDateFormatted}
-DTEND;TZID=America/New_York:${endDateFormatted}
+DTSTART:${startDateFormatted}
+DTEND:${endDateFormatted}
 DESCRIPTION:${descripcion}
+UID:${eventDate.unix()}@mycalendar
+DTSTAMP:${moment.utc().format('YYYYMMDDTHHmmss')}Z
 END:VEVENT
 END:VCALENDAR`;
 
@@ -171,7 +155,7 @@ END:VCALENDAR`;
             .revokeObjectURL(url);
     };
     const fetchGoogleSheetEvents = () => {
-        const now = moment.tz("America/New_York").startOf('day').toDate();
+        const now = moment.tz(moment.tz.guess()).startOf('day').toDate();
         const sheetRange = 'Eventos!A2:E';
         const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheetRange}?key=${API_KEY}`;
 
