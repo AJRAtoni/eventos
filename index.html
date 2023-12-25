@@ -61,21 +61,19 @@
 
     const formatDate = date => moment.tz(date, moment.tz.guess()).format('L');
 
-    const createEventCard = ({ titulo, eventDate, descripcion, imagen }) => {
+    const createEventCard = ({ titulo, eventDate, descripcion, imagen, url }) => {
         const today = moment.tz(moment.tz.guess()).startOf('day');
         const eventMoment = moment.tz(eventDate, moment.tz.guess());
         const daysRemaining = eventMoment.diff(today, 'days');
         const diasfaltan = `FALTAN ${daysRemaining} DÍAS`;
-
 
         const card = document.createElement('div');
         card.className = 'card';
 
         const imageElement = document.createElement('img');
         imageElement.className = 'event-image';
-        imageElement.src = imagen;
+        imageElement.src = imagen || placeholderimagen; // Asegurarse de que hay una imagen
         imageElement.alt = titulo;
-        card.appendChild(imageElement);
 
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
@@ -100,63 +98,26 @@
         daysRemainingElement.textContent = diasfaltan;
         daysRemainingContainer.appendChild(daysRemainingElement);
 
-        const generateICalButton = document.createElement('p');
-        generateICalButton.className = 'iCal';
-        generateICalButton.textContent = '+';
-        generateICalButton.addEventListener('click', () => generateICalFile(titulo, eventDate, descripcion));
-        daysRemainingContainer.appendChild(generateICalButton);
-
         [eventTitle, eventDateElement, eventDescription, daysRemainingContainer].forEach(element => cardBody.appendChild(element));
-        card.appendChild(cardBody);
+
+        if (url) {
+            const cardLink = document.createElement('a');
+            cardLink.href = url;
+            cardLink.target = "_blank";
+            cardLink.appendChild(imageElement);
+            cardLink.appendChild(cardBody);
+            card.appendChild(cardLink);
+        } else {
+            card.appendChild(imageElement);
+            card.appendChild(cardBody);
+        }
 
         return card;
     };
 
-    const generateICalFile = (titulo, startDate, descripcion) => {
-    const eventDate = moment.tz(startDate, moment.tz.guess());
-    let startDateFormatted, endDateFormatted;
-
-    if (eventDate.hours() === 0 && eventDate.minutes() === 0) {
-        // Evento todo el día
-        startDateFormatted = eventDate.format('YYYYMMDD');
-        endDateFormatted = eventDate.clone().add(1, 'day').format('YYYYMMDD');
-    } else {
-        // Evento con hora específica
-        startDateFormatted = eventDate.utc().format('YYYYMMDDTHHmmss') + 'Z';
-        endDateFormatted = eventDate.clone().add(1, 'hour').utc().format('YYYYMMDDTHHmmss') + 'Z';
-    }
-
-    const iCalContent = `BEGIN:VCALENDAR
-VERSION:2.0
-CALSCALE:GREGORIAN
-BEGIN:VEVENT
-SUMMARY:${titulo}
-DTSTART:${startDateFormatted}
-DTEND:${endDateFormatted}
-DESCRIPTION:${descripcion}
-UID:${eventDate.unix()}@mycalendar
-DTSTAMP:${moment.utc().format('YYYYMMDDTHHmmss')}Z
-END:VEVENT
-END:VCALENDAR`;
-
-        const blob = new Blob([iCalContent], { type: 'text/calendar' });
-        const url = window
-            .URL
-            .createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `${titulo}.ics`;
-        document
-            .body
-            .appendChild(a);
-        a.click();
-        window
-            .URL
-            .revokeObjectURL(url);
-    };
     const fetchGoogleSheetEvents = () => {
         const now = moment.tz(moment.tz.guess()).startOf('day').toDate();
-        const sheetRange = 'Eventos!A2:E';
+        const sheetRange = 'Eventos!A2:F';
         const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheetRange}?key=${API_KEY}`;
 
         fetch(sheetUrl)
@@ -165,10 +126,10 @@ END:VCALENDAR`;
                 const rows = data.values || [];
                 allEvents = rows
                     .map(row => {
-                        const [titulo, dateString, descripcion, imageFilename, categoriaRow] = row;
+                        const [titulo, dateString, descripcion, imageFilename, categoriaRow, url] = row;
                         const eventDate = new Date(dateString);
                         return !isNaN(eventDate) && eventDate >= now
-                            ? { titulo, eventDate, descripcion, imagen: imageFilename ? `img/${imageFilename}` : placeholderimagen, categoria: categoriaRow }
+                            ? { titulo, eventDate, descripcion, imagen: imageFilename ? `img/${imageFilename}` : placeholderimagen, categoria: categoriaRow, url }
                             : null;
                     })
                     .filter(Boolean)
@@ -185,7 +146,6 @@ END:VCALENDAR`;
             eventsContainer.appendChild(createEventCard(event));
         });
     }
-
 
     function filterEvents(categoria) {
         document.querySelectorAll('.botonesfiltro').forEach(button => {
@@ -218,7 +178,6 @@ END:VCALENDAR`;
 
     displayEvents(filteredEvents);
 }
-
 
     fetchGoogleSheetEvents();
 </script>
