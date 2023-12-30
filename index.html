@@ -70,10 +70,24 @@
         const card = document.createElement('div');
         card.className = 'card';
 
+        const linkElement = document.createElement('a');
+        linkElement.href = url;
+        linkElement.target = '_blank';
+
         const imageElement = document.createElement('img');
         imageElement.className = 'event-image';
-        imageElement.src = imagen || placeholderimagen; // Asegurarse de que hay una imagen
+        imageElement.src = imagen || placeholderimagen;
         imageElement.alt = titulo;
+
+        if (url) {
+            const linkElement = document.createElement('a');
+            linkElement.href = url;
+            linkElement.target = '_blank';
+            linkElement.appendChild(imageElement);
+            card.appendChild(linkElement);
+        } else {
+            card.appendChild(imageElement);
+        }
 
         const cardBody = document.createElement('div');
         cardBody.className = 'card-body';
@@ -100,17 +114,7 @@
 
         [eventTitle, eventDateElement, eventDescription, daysRemainingContainer].forEach(element => cardBody.appendChild(element));
 
-        if (url) {
-            const cardLink = document.createElement('a');
-            cardLink.href = url;
-            cardLink.target = "_blank";
-            cardLink.appendChild(imageElement);
-            cardLink.appendChild(cardBody);
-            card.appendChild(cardLink);
-        } else {
-            card.appendChild(imageElement);
-            card.appendChild(cardBody);
-        }
+        card.appendChild(cardBody);
 
         return card;
     };
