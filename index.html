@@ -130,10 +130,10 @@
                 const rows = data.values || [];
                 allEvents = rows
                     .map(row => {
-                        const [titulo, dateString, descripcion, imageUrl, categoriaRow, url] = row;
+                        const [titulo, dateString, descripcion, imageUrl, categoriaRow, url] = row; 
                         const eventDate = new Date(dateString);
                         return !isNaN(eventDate) && eventDate >= now
-                        ? { titulo, eventDate, descripcion, imagen: imageUrl || placeholderimagen, categoria: categoriaRow, url }
+                        ? { titulo, eventDate, descripcion, imagen: imageUrl || placeholderimagen, categoria: categoriaRow, url: url } 
                             : null;
                     })
                     .filter(Boolean)
