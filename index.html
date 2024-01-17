@@ -76,7 +76,7 @@
 
         const imageElement = document.createElement('img');
         imageElement.className = 'event-image';
-        imageElement.src = imageUrl || placeholderimagen;
+        imageElement.src = imagen || placeholderimagen;
         imageElement.alt = titulo;
 
         if (url) {
@@ -130,12 +130,13 @@
                 const rows = data.values || [];
                 allEvents = rows
                     .map(row => {
-                        const [titulo, dateString, descripcion, imageUrl, categoriaRow, url] = row; 
+                        const [titulo, dateString, descripcion, imageUrl, categoriaRow, url] = row;
                         const eventDate = new Date(dateString);
                         return !isNaN(eventDate) && eventDate >= now
-                        ? { titulo, eventDate, descripcion, imagen: imageUrl || placeholderimagen, categoria: categoriaRow, url: url } 
+                            ? { titulo, eventDate, descripcion, imagen: imageUrl || placeholderimagen, categoria: categoriaRow, url }
                             : null;
                     })
+
                     .filter(Boolean)
                     .sort((a, b) => a.eventDate - b.eventDate);
 
@@ -173,15 +174,15 @@
     }
 
     function searchEvents() {
-    const searchString = document.getElementById('searchInput').value.toLowerCase();
+        const searchString = document.getElementById('searchInput').value.toLowerCase();
 
-    const filteredEvents = allEvents.filter(event => 
-        (event.titulo ? event.titulo.toLowerCase().includes(searchString) : false) ||
-        (event.descripcion ? event.descripcion.toLowerCase().includes(searchString) : false)
-    );
+        const filteredEvents = allEvents.filter(event =>
+            (event.titulo ? event.titulo.toLowerCase().includes(searchString) : false) ||
+            (event.descripcion ? event.descripcion.toLowerCase().includes(searchString) : false)
+        );
 
-    displayEvents(filteredEvents);
-}
+        displayEvents(filteredEvents);
+    }
 
     fetchGoogleSheetEvents();
 </script>
