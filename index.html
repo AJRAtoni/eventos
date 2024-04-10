@@ -59,7 +59,7 @@
 
     let allEvents = [];
 
-    const formatDate = date => moment.tz(date, moment.tz.guess()).format('L');
+    const formatDate = date => moment(date).format('DD/MM/YYYY');
 
     const createEventCard = ({ titulo, eventDate, descripcion, imagen, url }) => {
         const today = moment.tz(moment.tz.guess()).startOf('day');
