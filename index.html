@@ -13,9 +13,8 @@
     <meta property="og:description" content="Calendario de eventos de AJRA">
     <meta property="og:image" content="img/eventos.png">
     <meta property="og:url" content="https://eventos.ajra.es">
-    <script src="https://beamanalytics.b-cdn.net/beam.min.js" data-token="d475f634-84bb-448f-9a73-b0576d734398"
-        async></script>
-    <link href="style.css" rel="stylesheet" type="text/css" />
+    <script src="https://beamanalytics.b-cdn.net/beam.min.js" data-token="d475f634-84bb-448f-9a73-b0576d734398" async></script>
+    <link href="style.css" rel="stylesheet" type="text/css">
 </head>
 
 <body>
@@ -24,166 +23,153 @@
             <img src="img/AJRA.webp" alt="AJRA" class="avatar">
         </a>
     </header>
-    <div class="home">
-        <img src="img/logo.png" alt="AJRA" style="border-radius: 50%; margin-bottom: 25px;">
-        <h1>CALENDARIO DE EVENTOS</h1>
-        <h2>Listado de eventos de interes para AJRA</h2>
-        <a
-            href="news.ajra.es">
-            <h2 class="suscribirse">SUSCRIBETE</h2>
-        </a>
-    </div>
-    <div class="filter-buttons">
-        <button onclick="filterEvents('todos')" class="botonesfiltro">TODOS</button>
-        <button onclick="filterEvents('cineytv')" class="botonesfiltro">CINEYTV</button>
-        <button onclick="filterEvents('curiosidades')" class="botonesfiltro">CURIOSIDADES</button>
-        <button onclick="filterEvents('deportes')" class="botonesfiltro">DEPORTES</button>
-        <button onclick="filterEvents('festividades')" class="botonesfiltro">FESTIVIDADES</button>
-        <button onclick="filterEvents('tecnologia')" class="botonesfiltro">TECNOLOGIA</button>
-        <button onclick="filterEvents('videojuegos')" class="botonesfiltro">VIDEOJUEGOS</button>
-        <input type="text" id="searchInput" class="buscador" oninput="searchEvents()" placeholder="Buscar evento...">
-    </div>
-    <div id="events" class="row"></div>
-    <footer>2023 &copy; Desarrollado con 🧠 & 💛 por <a href="https://ajra.es"
-            style="text-decoration: none; color: black"> &lt;/AJRA&gt; </a></footer>
-</body>
+    <main>
+        <section class="home">
+            <img src="img/logo.png" alt="AJRA" style="border-radius: 50%; margin-bottom: 25px;">
+            <h1>CALENDARIO DE EVENTOS</h1>
+            <h2>Listado de eventos de interés para AJRA</h2>
+            <a href="https://news.ajra.es">
+                <h2 class="suscribirse">SUSCRÍBETE</h2>
+            </a>
+        </section>
+        <section class="filter-buttons">
+            <button onclick="filterEvents('todos')" class="botonesfiltro">TODOS</button>
+            <button onclick="filterEvents('cineytv')" class="botonesfiltro">CINE Y TV</button>
+            <button onclick="filterEvents('curiosidades')" class="botonesfiltro">CURIOSIDADES</button>
+            <button onclick="filterEvents('deportes')" class="botonesfiltro">DEPORTES</button>
+            <button onclick="filterEvents('festividades')" class="botonesfiltro">FESTIVIDADES</button>
+            <button onclick="filterEvents('tecnologia')" class="botonesfiltro">TECNOLOGÍA</button>
+            <button onclick="filterEvents('videojuegos')" class="botonesfiltro">VIDEOJUEGOS</button>
+            <input type="text" id="searchInput" class="buscador" oninput="searchEvents()" placeholder="Buscar evento...">
+        </section>
+        <section id="events" class="row"></section>
+    </main>
+    <footer>
+        <p>2023 &copy; Desarrollado con 🧠 & 💛 por <a href="https://ajra.es" style="text-decoration: none; color: black"> &lt;/AJRA&gt; </a></p>
+    </footer>
 
-</html>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
-<script>
-    const SPREADSHEET_ID = '1bjuRsUCQLT_MwgKQ9GR7gPHJyYq339v-JHM_ErPbGjI';
-    const API_KEY = 'AIzaSyBVknxjJb5j7AFLBrltXfOptE1xWweeGJ0';
-    const eventsContainer = document.getElementById('events');
-    const placeholderimagen = 'img/eventos.png';
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.34/moment-timezone-with-data.min.js"></script>
+    <script>
+        const SPREADSHEET_ID = '1bjuRsUCQLT_MwgKQ9GR7gPHJyYq339v-JHM_ErPbGjI';
+        const API_KEY = 'AIzaSyBVknxjJb5j7AFLBrltXfOptE1xWweeGJ0';
+        const eventsContainer = document.getElementById('events');
+        const placeholderImagen = 'img/eventos.png';
 
-    let allEvents = [];
+        let allEvents = [];
 
-    const formatDate = date => moment(date).format('DD/MM/YYYY');
+        const formatDate = date => moment(date).format('DD/MM/YYYY');
 
-    const createEventCard = ({ titulo, eventDate, descripcion, imagen, url }) => {
-        const today = moment.tz(moment.tz.guess()).startOf('day');
-        const eventMoment = moment.tz(eventDate, moment.tz.guess());
-        const daysRemaining = eventMoment.diff(today, 'days');
-        const diasfaltan = `FALTAN ${daysRemaining} DÍAS`;
+        const createEventCard = ({ titulo, eventDate, descripcion, imagen, url }) => {
+            const today = moment.tz(moment.tz.guess()).startOf('day');
+            const eventMoment = moment.tz(eventDate, moment.tz.guess());
+            const daysRemaining = eventMoment.diff(today, 'days');
+            const diasFaltan = `FALTAN ${daysRemaining} DÍAS`;
 
-        const card = document.createElement('div');
-        card.className = 'card';
+            const card = document.createElement('article');
+            card.className = 'card';
 
-        const linkElement = document.createElement('a');
-        linkElement.href = url;
-        linkElement.target = '_blank';
+            const imageElement = document.createElement('img');
+            imageElement.className = 'event-image';
+            imageElement.src = imagen || placeholderImagen;
+            imageElement.alt = titulo;
 
-        const imageElement = document.createElement('img');
-        imageElement.className = 'event-image';
-        imageElement.src = imagen || placeholderimagen;
-        imageElement.alt = titulo;
+            if (url) {
+                const linkElement = document.createElement('a');
+                linkElement.href = url;
+                linkElement.target = '_blank';
+                linkElement.appendChild(imageElement);
+                card.appendChild(linkElement);
+            } else {
+                card.appendChild(imageElement);
+            }
 
-        if (url) {
-            const linkElement = document.createElement('a');
-            linkElement.href = url;
-            linkElement.target = '_blank';
-            linkElement.appendChild(imageElement);
-            card.appendChild(linkElement);
-        } else {
-            card.appendChild(imageElement);
-        }
+            const cardBody = document.createElement('div');
+            cardBody.className = 'card-body';
 
-        const cardBody = document.createElement('div');
-        cardBody.className = 'card-body';
+            const eventTitle = document.createElement('h2');
+            eventTitle.className = 'titulo';
+            eventTitle.textContent = titulo;
 
-        const eventTitle = document.createElement('h2');
-        eventTitle.className = 'titulo';
-        eventTitle.textContent = titulo;
+            const eventDateElement = document.createElement('p');
+            eventDateElement.className = 'fecha';
+            eventDateElement.textContent = formatDate(eventDate);
 
-        const eventDateElement = document.createElement('p');
-        eventDateElement.className = 'fecha';
-        eventDateElement.textContent = formatDate(eventDate);
+            const eventDescription = document.createElement('p');
+            eventDescription.className = 'descripcion';
+            eventDescription.textContent = descripcion;
 
-        const eventDescription = document.createElement('p');
-        eventDescription.className = 'descripcion';
-        eventDescription.textContent = descripcion;
+            const daysRemainingContainer = document.createElement('div');
+            daysRemainingContainer.className = 'faltan-container';
 
-        const daysRemainingContainer = document.createElement('div');
-        daysRemainingContainer.className = 'faltan-container';
+            const daysRemainingElement = document.createElement('p');
+            daysRemainingElement.className = 'faltan';
+            daysRemainingElement.textContent = diasFaltan;
+            daysRemainingContainer.appendChild(daysRemainingElement);
 
-        const daysRemainingElement = document.createElement('p');
-        daysRemainingElement.className = 'faltan';
-        daysRemainingElement.textContent = diasfaltan;
-        daysRemainingContainer.appendChild(daysRemainingElement);
+            [eventTitle, eventDateElement, eventDescription, daysRemainingContainer].forEach(element => cardBody.appendChild(element));
 
-        [eventTitle, eventDateElement, eventDescription, daysRemainingContainer].forEach(element => cardBody.appendChild(element));
+            card.appendChild(cardBody);
 
-        card.appendChild(cardBody);
+            return card;
+        };
 
-        return card;
-    };
+        const fetchGoogleSheetEvents = async () => {
+            try {
+                const now = moment.tz(moment.tz.guess()).startOf('day').toDate();
+                const sheetRange = 'Eventos!A2:F';
+                const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheetRange}?key=${API_KEY}`;
 
-    const fetchGoogleSheetEvents = () => {
-        const now = moment.tz(moment.tz.guess()).startOf('day').toDate();
-        const sheetRange = 'Eventos!A2:F';
-        const sheetUrl = `https://sheets.googleapis.com/v4/spreadsheets/${SPREADSHEET_ID}/values/${sheetRange}?key=${API_KEY}`;
+                const response = await fetch(sheetUrl);
+                const data = await response.json();
 
-        fetch(sheetUrl)
-            .then(response => response.json())
-            .then(data => {
                 const rows = data.values || [];
                 allEvents = rows
                     .map(row => {
                         const [titulo, dateString, descripcion, imageUrl, categoriaRow, url] = row;
                         const eventDate = moment(dateString, 'DD/MM/YYYY').toDate();
                         return !isNaN(eventDate.getTime()) && eventDate >= now
-                            ? { titulo, eventDate, descripcion, imagen: imageUrl || placeholderimagen, categoria: categoriaRow, url }
+                            ? { titulo, eventDate, descripcion, imagen: imageUrl || placeholderImagen, categoria: categoriaRow, url }
                             : null;
                     })
-
-
                     .filter(Boolean)
                     .sort((a, b) => a.eventDate - b.eventDate);
 
                 displayEvents(allEvents);
-            })
-            .catch(error => console.error('Error:', error));
-    }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        };
 
-    const displayEvents = (events) => {
-        eventsContainer.innerHTML = '';
-        events.forEach(event => {
-            eventsContainer.appendChild(createEventCard(event));
-        });
-    }
-
-    function filterEvents(categoria) {
-        document.querySelectorAll('.botonesfiltro').forEach(button => {
-            button.classList.add('inactive');
-        });
-
-        if (categoria === 'todos') {
-            document.querySelectorAll('.botonesfiltro').forEach(button => {
-                button.classList.remove('inactive');
+        const displayEvents = (events) => {
+            eventsContainer.innerHTML = '';
+            events.forEach(event => {
+                eventsContainer.appendChild(createEventCard(event));
             });
-        } else {
-            document.querySelector(`.botonesfiltro[onclick="filterEvents('${categoria}')"]`).classList.remove('inactive');
-        }
+        };
 
-        if (categoria === 'todos') {
-            displayEvents(allEvents);
-        } else {
-            const filteredEvents = allEvents.filter(event => event.categoria === categoria);
+        const filterEvents = (categoria) => {
+            document.querySelectorAll('.botonesfiltro').forEach(button => {
+                button.classList.toggle('inactive', categoria !== 'todos' && !button.textContent.toLowerCase().includes(categoria));
+            });
+
+            const filteredEvents = categoria === 'todos' ? allEvents : allEvents.filter(event => event.categoria === categoria);
             displayEvents(filteredEvents);
-        }
-    }
+        };
 
-    function searchEvents() {
-        const searchString = document.getElementById('searchInput').value.toLowerCase();
+        const searchEvents = () => {
+            const searchString = document.getElementById('searchInput').value.toLowerCase();
 
-        const filteredEvents = allEvents.filter(event =>
-            (event.titulo ? event.titulo.toLowerCase().includes(searchString) : false) ||
-            (event.descripcion ? event.descripcion.toLowerCase().includes(searchString) : false)
-        );
+            const filteredEvents = allEvents.filter(event =>
+                (event.titulo?.toLowerCase().includes(searchString) || false) ||
+                (event.descripcion?.toLowerCase().includes(searchString) || false)
+            );
 
-        displayEvents(filteredEvents);
-    }
+            displayEvents(filteredEvents);
+        };
 
-    fetchGoogleSheetEvents();
-</script>
+        fetchGoogleSheetEvents();
+    </script>
+</body>
+
+</html>
